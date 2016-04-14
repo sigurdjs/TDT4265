@@ -4,7 +4,7 @@ function [Properties] = ObjectProperties( B )
     Properties(1).length = length(B);
     Properties(1).area = FindArea(B);
     Properties(1).compactness = (Properties(1).length)/(4*pi*Properties(1).area);
-%     Properties(1).COM = CenterOfMass(B,pROPERTIES(1).area);
+%   Properties(1).COM = CenterOfMass(B,pROPERTIES(1).area);
 end
 
 function [ ContourLength ] = FindLength( B )
@@ -53,6 +53,7 @@ function [ ContourArea ] = FindArea(B)
             break
         end
     end
+    ContourArea = abs(area);
 end
 
 % function [ COM ] = CenterOfMass(B,area)
