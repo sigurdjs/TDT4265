@@ -1,53 +1,106 @@
-function [ c_length, diameter, dia_orientation , area] = ObjectProperties( B )
-%This function finds different shape properties of a closed boundary region B
-%   Detailed explanation goes here
-    c_length = FindLength(B);
-    [diameter, dia_orientation] = FindDiameter(B);
-    area = FindArea(B);
-
+function [Properties] = ObjectProperties( B )
+% This function calculates important properties of B such as 
+% contour length, enclosed area, ..  
+    Properties(1).length = length(B);
+    Properties(1).area = FindArea(B);
+    Properties(1).compactness = (Properties(1).length)/(4*pi*Properties(1).area);
+%   Properties(1).COM = CenterOfMass(B,pROPERTIES(1).area);
 end
 
-function [ Contour_Length ] = FindLength ( B )
-    Contour_Length = 0;
-    for i = 2:length(B)
-        Contour_Length = Contour_Length + sqrt((B(i,1) - B(i-1,1))^2 + (B(i,2) - B(i-1,2))^2);
-    end
-    Contour_Length = Contour_Length + sqrt((B(1,1) - B(length(B),1))^2 + (B(1,2) - B(length(B),2))^2);
-end
-
-
-function [ area ] = FindArea( B )
-    area = 0;
-    j = length(B)/2;
-    for i = 1:length(B)/4
-        area = area + (abs(B(i,1) - B(j,1)) + abs(B(i,2) - B(j,2)));
-        j = j-1;
-    end
-    j = length(B)/2+1;
-    for i = length(B):-1:((3*length(B))/4)+1
-        area = area + (abs(B(i,1) - B(j,1)) + abs(B(i,2) - B(j,2)));
-        j = j-1;
-    end
-end
-
-
-function [ diameter, orientation ] = FindDiameter( B )
-%   This function finds the generalized diameter, sup |x-y|, where x and y are
-%   boundary points and diameter in pixels.
-    maxdi = 0;
-    maxindex = 0;
-    for i = 1:length(B),
-        for j = 1:length(B),
-            di = sqrt((B(j,1) - B(i,1))^2  + (B(j,2) - B(i,2))^2);
-            if di > maxdi,
-                maxdi = di;
-                maxindex = [i j];
-            end
+function [ ContourLength ] = FindLength( B )
+    ContourLength = 0;
+    for i = 1: length(B)
+        if any(B(i)==[0 2 4 6])
+            ContourLength = ContourLength + 1;
+        elseif any(B(i)==[1 3 5 7])
+            ContourLength = ContourLength + sqrt(2);
+        else
+            disp('Chain-code outside value range detected, terminating calculation');
+            ContourLength = 0;
+            break;
         end
     end
-    diameter_vector = [abs(B(maxindex(2),1) - B(maxindex(1),1)) abs(B(maxindex(2),2) - B(maxindex(1),2))];
-    orientation = acos(diameter_vector(1)/diameter_vector(2));
-    diameter = maxdi;
 end
+
+
+function [ ContourArea ] = FindArea(B)
+% B is a closed region described by chain-codes. 0 for left, 1 for up, 2
+% for right and 0 for down. Area output in pixels.
+    area = 0;   ypos = 0;
+    for i = 1:length(B)
+        if B(i) == 6
+            area = area - ypos;
+        elseif B(i) == 0
+            ypos = ypos -1;
+        elseif B(i) == 2
+            area = area + ypos;
+        elseif B(i) == 4
+            ypos = ypos +1;
+        elseif B(i) == 1
+            ypos = ypos -1;
+            area = area + ypos;
+        elseif B(i) == 3
+            ypos = ypos +1;
+            area = area + ypos;
+        elseif B(i) == 5
+            ypos = ypos +1;
+            area = area - ypos;
+        elseif B(i) == 7
+            ypos = ypos -1;
+            area = area - ypos;
+        else
+            disp('Unknown chain-code detected. Cannot find area of region');
+            break
+        end
+    end
+    ContourArea = abs(area);
+end
+
+% function [ COM ] = CenterOfMass(B,area)
+% % Calculates center of mass (x,y) in pixels   
+% 
+%     % Calculation of COM.x
+%     sum = 0;   x = 0;   value = 0;
+%     for i = 1:length(B)
+%         if B(i) == 0
+%             x = x + 1;
+%             value = value + (x -0.5);
+%         elseif B(i) == 1
+%             sum = sum -value;
+%         elseif B(i) = 2
+%             value = value - (x -0.5);
+%             x = x - 1;
+%         elseif B(i) = 3
+%             sum = sum + value;
+%         else
+%             disp('Unknown chain-code detected. Cannot find area of region');
+%             break
+%         end
+%     end
+%     COM(1).x = sum/area;
+%     
+%     % Calculation of COM.y
+%     sum = 0;   y = 0;   value = 0;
+%     for i = 1:length(B)
+%         if B(i) == 1
+%             y = y + 1;
+%             value = value + (y -0.5);
+%         elseif B(i) == 2
+%             sum = sum -value;
+%         elseif B(i) = 3
+%             value = value - (y -0.5);
+%             y = y - 1;
+%         elseif B(i) = 0
+%             sum = sum + value;
+%         else
+%             disp('Unknown chain-code detected. Cannot find area of region');
+%             break
+%         end
+%     end
+%     COM(1).y = sum/area;
+% end
+        
+
+
 
 
