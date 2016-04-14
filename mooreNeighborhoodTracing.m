@@ -1,37 +1,41 @@
-function B = mooreNeighborhoodTracing( T )
+function [B, chain_code] = mooreNeighborhoodTracing( T )
     % T is a square tessellation (binary image), containing a 
     % connected component P of black/white cells.
-    % The return variable B is a contour sequence of pixels (rows in B) where each pixel
+    % The return variable B is a contour sequence (boundary region) of pixels (rows in B) where each pixel
     % contains a x-position (1st column in B) and an y-position (2nd column
     % in B).
+    
+    % Concept of moore neighborhood
+    %
+    %   |  7  |   0   |   1   |
+    %   -----------------------
+    %   |  6  |   p   |   2   |    , where p = boundary pixel
+    %   -----------------------
+    %   |  5  |   4   |   3   |
+    %   -----------------------
     
     global size_of_T;
     global nr_of_rows;
     global nr_of_columns;
     global black_pixel;
     global white_pixel;
-    global search_dir_up;
-    global search_dir_right;
-    global search_dir_down;
-    global search_dir_left;
-
+    
     % General definitions
     black_pixel = 0;
     white_pixel = 1;
-    search_dir_up    =  1;
-    search_dir_right =  2;
-    search_dir_down  =  3;
-    search_dir_left  =  4;
-    
     size_of_T     = size(T);
     nr_of_rows    = size_of_T(1);
     nr_of_columns = size_of_T(2);
+    
+    T = flipud( T );    % Flip the orientation of T so that the origin of the picture is in the bottom left.
+                        % Matlab has origin of a matrix in the top left.
+    
     
     % ---------------------------------------------------------
     % Find a starting point by searching for a black cell in T
     % ---------------------------------------------------------
     
-    [s, initial_search_direction] = findStartingPoint( T );
+    [s, initial_moore_neighbor] = findStartingPoint( T );
     
     if ( s == -1 )
        error('T does not contain any black cells'); 
@@ -40,51 +44,64 @@ function B = mooreNeighborhoodTracing( T )
     % ---------------------------------------------------------
     % Initialization of variables
     % ---------------------------------------------------------
-    
-    B = [];
-    B = [ B , s' ];                           % insert s in B
-    p = s;                                    % initialize boundary point
-    c = backtrack( p, initial_search_direction );   % initialize current pixel
-    search_direction = initial_search_direction;
+    row_iter      = 1;
+    chain_code    = NaN( nr_of_rows*nr_of_columns , 1 );
+    B             = NaN( nr_of_rows*nr_of_columns , 2 );
+    B(row_iter,:) = s;                                                      % insert s in B
+    p             = s;                                                      % initialize boundary point
+    [c, current_moore_neighbor] = backtrack( p, initial_moore_neighbor );   % initialize current pixel
     
     % Termination variables
-    termination_counter = 0;
-    termination_max_counter_value = nr_of_rows*nr_of_columns;
+    jacobs_stopping_criterion = current_moore_neighbor;
+    loop_counter              = 0;
+    max_number_of_iterations  = 1000000000;
     
-    while ( ~isequal(c,s) || ( search_direction ~= initial_search_direction) )  % Jacob's stopping criterion
+    while ( ~isequal(c,s)  )
         
-        if ( T(c(1), c(2)) == black_pixel )
-            B = [ B, c' ];
-            p = c;
-            c = backtrack( p, search_direction );
-        else
-           [c, search_direction] = getNextClockwisePixel( p, c );
+        loop_counter = loop_counter + 1;
+        
+        if ( loop_counter > max_number_of_iterations )
+            error( 'Unable to find a contour sequence');
         end
         
-        termination_counter = termination_counter + 1;
-        if ( termination_counter == termination_max_counter_value )
-            error( 'Unable to find a contour sequence');
+        x = c(2);
+        y = c(1);
+        
+        if ( T(x, y) == black_pixel )
+            row_iter = row_iter + 1;
+            
+            % add to solution
+            B(row_iter,:) = c;
+            chain_code(row_iter-1) = current_moore_neighbor;
+            
+            % backstepping
+            p = c;
+            [c, current_moore_neighbor] = backtrack( p, current_moore_neighbor );
+            
+        else
+           [c, current_moore_neighbor] = getNextClockwisePixel( c, current_moore_neighbor );
         end
     end
     
-    B = B';
+    % Remove unused space
+    B          = B( 1:row_iter, : );
+    chain_code = chain_code( 1:row_iter-1);
 end
 
-function [starting_point, initial_search_direction] = findStartingPoint( T )
-
-    global nr_of_rows;
-    global nr_of_columns;
-    global black_pixel;
-    global search_dir_right;
+function [starting_point, initial_moore_neighbor, pixel_entering_dir] = findStartingPoint( T )
     
-    initial_search_direction = search_dir_right;
+    global nr_of_columns;
+    global nr_of_rows;
+    global black_pixel;
+    
+    initial_moore_neighbor = 8;
     starting_point_found = false;
     starting_point = -1;
     
-    for i = 1:nr_of_rows
-        for j = 1:nr_of_columns
+    for j = 1:nr_of_columns
+        for i = 1:nr_of_rows
             if T(i,j) == black_pixel
-                starting_point = [i j];
+                starting_point = [j i];  % j = x position, i = y position
                 starting_point_found = true;
                 break;
             end
@@ -95,65 +112,66 @@ function [starting_point, initial_search_direction] = findStartingPoint( T )
     end
 end
 
-function last_pixel = backtrack( current_pixel, search_direction )
+function [last_pixel, new_moore_neighbor] = backtrack( current_pixel, moore_neighbor )
 
-    global search_dir_up;
-    global search_dir_right;
-    global search_dir_down;
-    global search_dir_left;
-
-    switch( search_direction )
-        case search_dir_up
-            x = current_pixel(1) + 1;
-            y = current_pixel(2);
-        case search_dir_down
-            x = current_pixel(1) - 1;
-            y = current_pixel(2);
-        case search_dir_right
-            x = current_pixel(1);
-            y = current_pixel(2) - 1;
-        case search_dir_left
-            x = current_pixel(1);
-            y = current_pixel(2) + 1;
-    end
+    % OBS! Assuming a clockwise rotation
     
-    last_pixel = [ x, y ];
+    switch( moore_neighbor )
+        case 8  % INITIAL STATE
+            last_pixel         = current_pixel + [0 -1];
+            new_moore_neighbor = 4;
+            
+        case {0 , 1}
+            last_pixel = current_pixel + [-1 0];
+            new_moore_neighbor = 6;
+            
+        case {2, 3}
+            last_pixel = current_pixel + [0 1];
+            new_moore_neighbor = 0;
+            
+        case {4, 5}
+            last_pixel = current_pixel + [1 0];
+            new_moore_neighbor = 2;
+            
+        case {6, 7}
+            last_pixel = current_pixel + [0 -1];
+            new_moore_neighbor = 4;
+    end
 end
 
-function [c, search_direction] = getNextClockwisePixel( boundary_pixel, current_pixel )
+function [c, new_moore_neighbor] = getNextClockwisePixel( current_pixel, current_moore_neighbor )
 
-    up    = 1;
-    right = 2;
-    down  = 3;
-    left  = 4;
-    orientation = mat2str( boundary_pixel - current_pixel );
-    c1 = current_pixel(1);
-    c2 = current_pixel(2);
-    switch(orientation)
-        case '[1 1]'
-            c = [c1, c2+1];
-            search_direction = right;
-        case '[1 0]'
-            c = [c1, c2+1];
-            search_direction = right;
-        case '[1 -1]'
-            c = [c1+1,c2];
-            search_direction = down;
-        case '[0 1]'
-            c = [c1-1,c2];
-            search_direction = up;
-        case '[0 -1]'
-            c = [c1+1,c2];
-            search_direction = down;
-        case '[-1 1]'
-            c = [c1-1,c2];
-            search_direction = up;
-        case '[-1 0]'
-            c = [c1,c2-1];
-            search_direction = left;
-        case '[-1 -1]'
-            c = [c1,c2-1];
-            search_direction = left;
+    switch( current_moore_neighbor )
+        case 0
+            c = current_pixel + [1 0];
+            new_moore_neighbor = 1;
+            
+        case 1
+            c = current_pixel + [0 -1];
+            new_moore_neighbor = 2;
+            
+        case 2
+            c = current_pixel + [0 -1];
+            new_moore_neighbor = 3;
+            
+        case 3
+            c = current_pixel + [-1 0];
+            new_moore_neighbor = 4;
+            
+        case 4
+            c = current_pixel + [-1 0];
+            new_moore_neighbor = 5;
+        
+        case 5
+            c = current_pixel + [0 1];
+            new_moore_neighbor = 6;
+        
+        case 6
+            c = current_pixel + [0 1];
+            new_moore_neighbor = 7;
+        
+        case 7
+            c = current_pixel + [1 0];
+            new_moore_neighbor = 0;
     end
-
 end
