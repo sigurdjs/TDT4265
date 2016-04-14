@@ -28,7 +28,9 @@ function [ ContourArea ] = FindArea(B)
 end
 
 function [ COM ] = CenterOfMass(B,area)
-% Calculates center of mass (x,y) in pixels    
+% Calculates center of mass (x,y) in pixels   
+
+    % Calculation of COM.x
     sum = 0;   x = 0;   value = 0;
     for i = 1:length(B)
         if B(i) == 0
@@ -47,6 +49,8 @@ function [ COM ] = CenterOfMass(B,area)
         end
     end
     COM(1).x = sum/area;
+    
+    % Calculation of COM.y
     sum = 0;   y = 0;   value = 0;
     for i = 1:length(B)
         if B(i) == 1
