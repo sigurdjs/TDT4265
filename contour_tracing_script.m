@@ -1,6 +1,6 @@
 
 % Load image
-image = imread('test.png');
+image = imread('test2.png');
 
 % Preprocessing of image
 BW = im2bw(image);          % convert image to black and white image
@@ -13,13 +13,13 @@ contours = mooreNeighborhoodTracing( BW );
 sizeOfBW = size(BW);
 n = length(contours);
 M = ones(sizeOfBW);
-
 for row = 1:n
     x = contours(row,1);
     y = contours(row,2);
-    M(x,y) = 0; 
+    M(y,x) = 0; 
 end
-%imshow(M);
+M = flipud(M);
+imshow(M);
 
 % % Identify image (object) properties
 % [major_axis_diameter, minor_axis_diameter] = computeDiameterProperties( contours ); 
