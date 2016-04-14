@@ -7,7 +7,7 @@ BW = im2bw(image);          % convert image to black and white image
 BW = padarray(BW,[1 1],1);  % pad image around the edges with white pixels
 
 % Contour Tracing
-contours = mooreNeighborhoodTracing( BW );
+[contours,chains] = mooreNeighborhoodTracing( BW );
 
 % Recreation of contours in an image
 sizeOfBW = size(BW);
