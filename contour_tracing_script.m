@@ -21,11 +21,11 @@ for row = 1:n
 end
 %imshow(M);
 
-% Identify image (object) properties
-[major_axis_diameter, minor_axis_diameter] = computeDiameterProperties( contours ); 
-[edges, vertices] = computeNrOfEdgesAndVertices( contours );
-
-
-if ( major_axis_diameter - minor_axis_diameter < 5 )
-   disp(' CIRCLE ') 
-end
+% % Identify image (object) properties
+% [major_axis_diameter, minor_axis_diameter] = computeDiameterProperties( contours ); 
+% [edges, vertices] = computeNrOfEdgesAndVertices( contours );
+% 
+% 
+% if ( major_axis_diameter - minor_axis_diameter < 5 )
+%    disp(' CIRCLE ') 
+% end
