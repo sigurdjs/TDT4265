@@ -132,8 +132,3 @@ function [ x, y ] = CenterOfMass(B,area)
     end
     y = sum/area;
 end
-        
-
-
-
-

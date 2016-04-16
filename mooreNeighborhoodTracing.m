@@ -85,7 +85,8 @@ function [B, chain_code] = mooreNeighborhoodTracing( T )
     
     % Remove unused space
     B          = B( 1:row_iter, : );
-    chain_code = chain_code( 1:row_iter-1);
+    chain_code = chain_code( 1:row_iter);
+    chain_code(end) = current_moore_neighbor;  % Add the last moore neighbor
 end
 
 function [starting_point, initial_moore_neighbor, pixel_entering_dir] = findStartingPoint( T )
