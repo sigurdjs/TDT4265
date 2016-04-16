@@ -1,6 +1,6 @@
 
 % Load image
-image = imread('test3.png');
+image = imread('square.png');
 
 % Preprocessing of image
 BW = im2bw(image);          % convert image to black and white image
