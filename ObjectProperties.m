@@ -1,10 +1,10 @@
 function [Properties] = ObjectProperties( B )
 % This function calculates important properties of B such as 
 % contour length, enclosed area, ..  
-    Properties(1).length = length(B);
+    Properties(1).length = FindLength(B);
     Properties(1).area = FindArea(B);
     Properties(1).compactness = (Properties(1).length)/(4*pi*Properties(1).area);
-%   Properties(1).COM = CenterOfMass(B,pROPERTIES(1).area);
+    [Properties(1).comx ,Properties(1).comy] = CenterOfMass(B,Properties(1).area);
 end
 
 function [ ContourLength ] = FindLength( B )
@@ -24,8 +24,7 @@ end
 
 
 function [ ContourArea ] = FindArea(B)
-% B is a closed region described by chain-codes. 0 for left, 1 for up, 2
-% for right and 0 for down. Area output in pixels.
+% B is a closed region described by chain-codes. 
     area = 0;   ypos = 0;
     for i = 1:length(B)
         if B(i) == 6
@@ -56,49 +55,83 @@ function [ ContourArea ] = FindArea(B)
     ContourArea = abs(area);
 end
 
-% function [ COM ] = CenterOfMass(B,area)
-% % Calculates center of mass (x,y) in pixels   
-% 
-%     % Calculation of COM.x
-%     sum = 0;   x = 0;   value = 0;
-%     for i = 1:length(B)
-%         if B(i) == 0
-%             x = x + 1;
-%             value = value + (x -0.5);
-%         elseif B(i) == 1
-%             sum = sum -value;
-%         elseif B(i) = 2
-%             value = value - (x -0.5);
-%             x = x - 1;
-%         elseif B(i) = 3
-%             sum = sum + value;
-%         else
-%             disp('Unknown chain-code detected. Cannot find area of region');
-%             break
-%         end
-%     end
-%     COM(1).x = sum/area;
-%     
-%     % Calculation of COM.y
-%     sum = 0;   y = 0;   value = 0;
-%     for i = 1:length(B)
-%         if B(i) == 1
-%             y = y + 1;
-%             value = value + (y -0.5);
-%         elseif B(i) == 2
-%             sum = sum -value;
-%         elseif B(i) = 3
-%             value = value - (y -0.5);
-%             y = y - 1;
-%         elseif B(i) = 0
-%             sum = sum + value;
-%         else
-%             disp('Unknown chain-code detected. Cannot find area of region');
-%             break
-%         end
-%     end
-%     COM(1).y = sum/area;
-% end
+function [ x, y ] = CenterOfMass(B,area)
+% Calculates center of mass (x,y) in pixels  0 for left, 1 for up, 2
+% for right and 0 for down. Area output in pixels.
+
+
+    % Calculation of COM.x
+    sum = 0;   x = 0;   value = 0;
+    for i = 1:length(B)
+        if B(i) == 6
+            x = x + 1;
+            value = value + (x -0.5);
+        elseif B(i) == 0
+            sum = sum -value;
+        elseif B(i) == 2
+            value = value - (x -0.5);
+            x = x - 1;
+        elseif B(i) == 4
+            sum = sum + value;
+        elseif B(i) == 1
+            sum = sum -value;
+            value = value - (x -0.5);
+            x = x - 1;
+        elseif B(i) == 3
+            value = value - (x -0.5);
+            x = x - 1;
+            sum = sum + value;
+        elseif B(i) == 5
+            x = x + 1;
+            value = value + (x -0.5);
+            sum = sum + value;
+        elseif B(i) == 7
+            sum = sum -value;
+            x = x + 1;
+            value = value + (x -0.5);
+        else
+            disp('Unknown chain-code detected. Cannot find area of region');
+            break
+        end
+    end
+    x = sum/area;
+    
+    % Calculation of COM.y
+    sum = 0;   y = 0;   value = 0;
+    for i = 1:length(B)
+        if B(i) == 0
+            y = y + 1;
+            value = value + (y -0.5);
+        elseif B(i) == 2
+            sum = sum -value;
+        elseif B(i) == 4
+            value = value - (y -0.5);
+            y = y - 1;
+        elseif B(i) == 6
+            sum = sum + value;
+        elseif B(i) == 1
+            y = y + 1;
+            value = value + (y -0.5);
+            sum = sum -value;
+        elseif B(i) == 3
+            value = value - (y -0.5);
+            y = y - 1;
+            sum = sum -value;
+        elseif B(i) == 5
+            sum = sum + value;
+            value = value - (y -0.5);
+            y = y - 1;
+        elseif B(i) == 7
+            y = y + 1;
+            value = value + (y -0.5);
+            sum = sum + value;
+        else
+            disp('Unknown chain-code detected. Cannot find area of region');
+            break
+        end
+    end
+    y = sum/area;
+end
         
 
 
