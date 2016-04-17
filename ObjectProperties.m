@@ -7,7 +7,7 @@ function [Properties] = ObjectProperties( chaincode , coordinates,M)
     [Properties(1).comx ,Properties(1).comy] = CenterOfMass(chaincode,Properties(1).area);
     Properties(1).majoraxis = MajorAxis(coordinates);
     Properties(1).minoraxis = [0 -1; 1 0]*Properties(1).majoraxis;
-    Properties(1).FilledRegion = FillRegion(M);
+    Properties(1).FilledRegion = FillRegion(chaincode,coordinates,M);
 end
 
 function [ ContourLength ] = FindLength( B )
@@ -24,7 +24,6 @@ function [ ContourLength ] = FindLength( B )
         end
     end
 end
-
 
 function [ ContourArea ] = FindArea(B)
 % B is a closed region described by chain-codes. 
@@ -67,10 +66,7 @@ function [ ContourArea ] = FindArea(B)
 end
 
 function [ x, y ] = CenterOfMass(B,area)
-% Calculates center of mass (x,y) in pixels  0 for left, 1 for up, 2
-% for right and 0 for down. Area output in pixels.
-
-
+% Calculates center of mass (x,y) in pixels  
     % Calculation of COM.x
     sum = 0;   x = 0;   value = 0;
     for i = 1:length(B)
@@ -177,35 +173,58 @@ function [ MajorAxis ] = MajorAxis( C )
     MajorAxis = diavec;
 end
 
-function [ FilledMatrix ] = FillRegion ( M )
-    %Fills the region described by the binary matrix M with 0 for space
-    %outside the region and 1 for space inside. 
+function [ Filled ] = FillRegion ( B, C ,M)
+    %Fills the region described by the chain-codes C
+    x = C(1,1);  y = C(1,2);
     [m,n] = size(M);
-    FilledMatrix = zeros(m,n); 
-    for i = 1:n
-        TimesCrossed = 0; %Number of times crossing the boundary
-        for j = 1:m
-            if j > 1 && j < m
-                if (M(j,i) == 0 && M(j-1,i) == 1) && M(j+1,i) == 1
-                    FilledMatrix(j,i) = 1;
-                    TimesCrossed = TimesCrossed + 1;
-                elseif M(j,i) == 0 && M(j-1,i) == 1
-                    FilledMatrix(j,i) = 1;
-                    TimesCrossed = TimesCrossed + 1;
-                elseif (M(j,i) == 0 && M(j+1,i) == 1) && M(j-1,i) ~= 0
-                    FilledMatrix(j,i) = 1;
-                    TimesCrossed = TimesCrossed + 1;
-                elseif M(j,i) == 0 && M(j-1,i) == 0
-                    FilledMatrix(j,i) = 1;
-                elseif mod(TimesCrossed,2) == 1
-                    FilledMatrix(j,i) = 1;
-                end
-            else
-                if M(j,i) == 0
-                    FilledMatrix(j,i) = 1;
-                    TimesCrossed = TimesCrossed + 1;  
-                end
-            end
+    Filled = zeros(m,n);
+    len = length(B); 
+    for i = 1:len
+        if B(i) == 2
+            Filled(1:y,x) = 1;
+            x = x+1;
+        elseif B(i) == 6
+             Filled(1:y,x) = 0;
+            x = x-1;
+        elseif B(i) == 1
+            Filled(1:y,x) = 1;
+            x = x+1;    y =y+1;
+        elseif B(i) == 3
+            Filled(1:y,x) = 1;
+            x = x+1;    y =y-1;
+        elseif B(i) == 5
+            Filled(1:y,x) = 0;
+            x = x-1;    y =y-1;
+        elseif B(i) == 7
+            Filled(1:y,x) = 0;
+            x = x-1;    y =y+1;
+        elseif B(i) == 0
+            y = y+1;
+        elseif B(i) == 4
+            y = y-1;       
         end
     end
+    Filled(1:y,x) = 0;
 end
+    
+        
+            
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
