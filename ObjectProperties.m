@@ -8,6 +8,7 @@ function [Properties] = ObjectProperties( chaincode , coordinates,M)
     Properties(1).majoraxis = MajorAxis(coordinates);
     Properties(1).minoraxis = [0 -1; 1 0]*Properties(1).majoraxis;
     Properties(1).FilledRegion = FillRegion(chaincode,coordinates,M);
+    Properties(1).LMOIangle = LeastMomentOfInertia(Properties(1).FilledRegion,Properties(1).comx,Properties(1).comy);
 end
 
 function [ ContourLength ] = FindLength( B )
@@ -89,21 +90,21 @@ function [ x, y ] = CenterOfMass(B,area)
             x = x + 1;
             value = value + (x -0.5);
             sum = sum -value;
-        %Right and down
+        %Down and right
         elseif B(i) == 3
+            sum = sum + value;
             x = x + 1;
             value = value + (x -0.5);
-            sum = sum + value;
         %Left and down
         elseif B(i) == 5
             value = value - (x -0.5);
             x = x - 1;
             sum = sum + value;
-        %Left and up
+        %Up and left
         elseif B(i) == 7
+            sum = sum -value;
             value = value - (x -0.5);
             x = x - 1;
-            sum = sum -value;
         else
             disp('Unknown chain-code detected. Cannot find area of region');
             break
@@ -175,16 +176,16 @@ end
 
 function [ Filled ] = FillRegion ( B, C ,M)
     %Fills the region described by the chain-codes C
-    x = C(1,1);  y = C(1,2);
     [m,n] = size(M);
     Filled = zeros(m,n);
+    x = 1;  y = 1;
     len = length(B); 
     for i = 1:len
         if B(i) == 2
             Filled(1:y,x) = 1;
             x = x+1;
         elseif B(i) == 6
-             Filled(1:y,x) = 0;
+            Filled(1:y,x) = 0;
             x = x-1;
         elseif B(i) == 1
             Filled(1:y,x) = 1;
@@ -199,15 +200,33 @@ function [ Filled ] = FillRegion ( B, C ,M)
             Filled(1:y,x) = 0;
             x = x-1;    y =y+1;
         elseif B(i) == 0
+            Filled(y,x) = 1;
             y = y+1;
         elseif B(i) == 4
+            Filled(y,x) = 1;
             y = y-1;       
         end
     end
     Filled(1:y,x) = 0;
+%     for i = 1:m
+%         if any()
 end
-    
         
+function [ Angle ] = LeastMomentOfInertia (Filled,COMx,COMy)
+    Filled = flipud(Filled);
+    mu_11 = 0;  mu_20 = 0;  mu_02 = 0;
+    [m,n] = size(Filled);
+    for i = 1:m
+        for j = 1:n
+            if Filled(i,j) == 1
+                mu_11 = mu_11 + ((i-COMy)*(j-COMx));
+                mu_20 = mu_20 + ((j-COMx)^2);
+                mu_02 = mu_02 + ((i-COMy)^2);
+            end
+        end
+    end
+    Angle = 0.5*atan((2*mu_11)/(mu_20-mu_02));
+end
             
     
     
