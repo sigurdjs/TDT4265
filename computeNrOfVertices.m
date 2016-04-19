@@ -1,6 +1,6 @@
 function number_of_vertices = computeNrOfVertices( chain_code)
     
-    subplot(1,4,1)
+    subplot(1,3,1)
     plot(chain_code)
     
     
@@ -13,7 +13,7 @@ function number_of_vertices = computeNrOfVertices( chain_code)
     end   
     meaned_chain_code(end-grid_size:end) = sum(chain_code(end-grid_size:end))/grid_size;
         
-    subplot(1,4,2)
+    subplot(1,3,2)
     plot(meaned_chain_code)
     
     grid_size = 18;
@@ -27,18 +27,15 @@ function number_of_vertices = computeNrOfVertices( chain_code)
     end
     filtered_meaned_chain_code(counter) = mode( meaned_chain_code(end-grid_size:end));
 
-    filtered_chain_code_diff = differentiateChainCode(filtered_meaned_chain_code);
-    
-
-    subplot(1,4,3)
+    subplot(1,3,3)
     plot(filtered_meaned_chain_code)
-    subplot(1,4,4)
-    plot(filtered_chain_code_diff)
     
-    number_of_vertices = 0;
-    for i = 1:length(filtered_chain_code_diff)
-       if filtered_chain_code_diff(i) ~= 0
+    number_of_vertices = 1;
+    current_value = filtered_meaned_chain_code(1);
+    for i = 2:length(filtered_meaned_chain_code)   
+       if filtered_meaned_chain_code(i) ~= current_value;
            number_of_vertices = number_of_vertices + 1;
+           current_value = filtered_meaned_chain_code(i);
        end
     end
 end
