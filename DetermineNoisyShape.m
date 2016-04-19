@@ -3,12 +3,14 @@ function [ shape ] = DetermineNoisyShape( Properties )
     Rectangularity = Properties(1).area/Properties(1).EncA;
     disp(Rectangularity)
     
-    if Rectangularity <= 1 &&  Rectangularity > 0.9
+    if Rectangularity <= 1 &&  Rectangularity > 0.95
         if Properties(1).EncL == Properties(1).EncH
             disp('The shape is a square');
         else
             disp('The shape is a rectangle');
         end
+    elseif Rectangularity <= 0.49 && Rectangularity >= 0.51
+        disp('The shape is a triangle');
     elseif Rectangularity < ((pi/4) + (pi/200)) && Rectangularity > ((pi/4) - (pi/200))
         if Properties(1).EncL >= Properties(1).EncH-40 && Properties(1).EncL <= Properties(1).EncH+40
             disp('The shape is a circle');

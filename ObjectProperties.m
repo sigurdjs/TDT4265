@@ -4,13 +4,9 @@ function [Properties] = ObjectProperties( chaincode , coordinates,M)
     Properties(1).length = FindLength(chaincode);
     Properties(1).area = FindArea(chaincode);
     Properties(1).compactness = (Properties(1).length)^2/(4*pi*Properties(1).area);
-    [Properties(1).comx ,Properties(1).comy] = CenterOfMass(chaincode,Properties(1).area);
-%     Properties(1).majoraxis = MajorAxis(coordinates);
-%     Properties(1).minoraxis = [0 -1; 1 0]*Properties(1).majoraxis;
-%     Properties(1).FilledRegion = FillRegion(chaincode,coordinates,M);
-%     Properties(1).LMOIangle = LeastMomentOfInertia(Properties(1).FilledRegion,Properties(1).comx,Properties(1).comy);
+    [Properties(1).comx ,Properties(1).comy] = CenterOfMass(chaincode,coordinates,Properties(1).area);
     [Properties(1).EncL,Properties(1).EncH,Properties(1).EncA,Properties(1).figure] = EnclosingRectangle(coordinates);
-    Properties(1).NumOfEndpoints = findEndpoints(coordinates,chaincode);
+    
     
 end
 
@@ -69,7 +65,7 @@ function [ ContourArea ] = FindArea(B)
     ContourArea = abs(area);
 end
 
-function [ x, y ] = CenterOfMass(B,area)
+function [ x, y ] = CenterOfMass(B,C,area)
 % Calculates center of mass (x,y) in pixels  
     % Calculation of COM.x
     sum = 0;   x = 0;   value = 0;
@@ -113,7 +109,7 @@ function [ x, y ] = CenterOfMass(B,area)
             break
         end
     end
-    x = sum/area;
+    x = (sum/area);
     
     % Calculation of COM.y
     sum = 0;   y = 0;   value = 0;
@@ -137,27 +133,27 @@ function [ x, y ] = CenterOfMass(B,area)
             y = y + 1;
             value = value + (y -0.5);
             sum = sum -value;
-        %Right and down
+        %Down and right
         elseif B(i) == 1
+            sum = sum + value;
             y = y + 1;
             value = value + (y -0.5);
-            sum = sum + value;
         %Left and down
         elseif B(i) == 3
             value = value - (y -0.5);
             y = y - 1;
             sum = sum + value;
-        %Left and up
+        %Up and left
         elseif B(i) == 5
+            sum = sum -value;
             value = value - (y -0.5);
             y = y - 1;
-            sum = sum -value;
         else
             disp('Unknown chain-code detected. Cannot find area of region');
             break
         end
     end
-    y = abs(sum/area);
+    y = (sum/area);
 end
 
 function [ MajorAxis ] = MajorAxis( C )
@@ -177,59 +173,6 @@ function [ MajorAxis ] = MajorAxis( C )
     MajorAxis = diavec;
 end
 
-% function [ Filled ] = FillRegion ( B, C ,M)
-%     %Fills the region described by the chain-codes C
-%     [m,n] = size(M);
-%     Filled = zeros(m,n);
-%     x = 1;  y = 1;
-%     len = length(B); 
-%     for i = 1:len
-%         if B(i) == 2
-%             Filled(1:y,x) = 1;
-%             x = x+1;
-%         elseif B(i) == 6
-%             Filled(1:y,x) = 0;
-%             x = x-1;
-%         elseif B(i) == 1
-%             Filled(1:y,x) = 1;
-%             x = x+1;    y =y+1;
-%         elseif B(i) == 3
-%             Filled(1:y,x) = 1;
-%             x = x+1;    y =y-1;
-%         elseif B(i) == 5
-%             Filled(1:y,x) = 0;
-%             x = x-1;    y =y-1;
-%         elseif B(i) == 7
-%             Filled(1:y,x) = 0;
-%             x = x-1;    y =y+1;
-%         elseif B(i) == 0
-%             Filled(y,x) = 1;
-%             y = y+1;
-%         elseif B(i) == 4
-%             Filled(y,x) = 1;
-%             y = y-1;       
-%         end
-%     end
-%     Filled(1:y,x) = 0;
-% %     for i = 1:m
-% %         if any()
-% end
-%         
-% function [ Angle ] = LeastMomentOfInertia (Filled,COMx,COMy)
-%     Filled = flipud(Filled);
-%     mu_11 = 0;  mu_20 = 0;  mu_02 = 0;
-%     [m,n] = size(Filled);
-%     for i = 1:m
-%         for j = 1:n
-%             if Filled(i,j) == 1
-%                 mu_11 = mu_11 + ((i-COMy)*(j-COMx));
-%                 mu_20 = mu_20 + ((j-COMx)^2);
-%                 mu_02 = mu_02 + ((i-COMy)^2);
-%             end
-%         end
-%     end
-%     Angle = 0.5*atan((2*mu_11)/(mu_20-mu_02));
-% end
 
 function [ Length, Height, Area , Figure] = EnclosingRectangle(C)
     Length = 0; Height = 0; MinArea = 1e+10;
@@ -254,25 +197,6 @@ function [ Length, Height, Area , Figure] = EnclosingRectangle(C)
     MinMatr(:,end) = 1;
     Figure = MinMatr;
 end
-   
-
-% function [ Matrix ] = RemoveZeroRowAndCol( M )
-% %   Removes a column or row from Matrix if it consists only of zeros
-%     Matrix = M; rowsToDelete = [];  colsToDelete = [];
-%     [row,col] = size(M);
-%     for i = 1:row
-%         if ~any(M(i,:))
-%             rowsToDelete = [rowsToDelete i];
-%         end
-%     end
-%     for j = 1:col
-%         if ~any(M(:,j))
-%             colsToDelete = [colsToDelete j];
-%         end
-%     end
-%     Matrix(rowsToDelete,:) = [];
-%     Matrix(:,colsToDelete) = [];
-% end
 
 
 function [ Vectors ] = RotateVectors(vecs,angle)
