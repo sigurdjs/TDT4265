@@ -5,11 +5,12 @@ function [Properties] = ObjectProperties( chaincode , coordinates,M)
     Properties(1).area = FindArea(chaincode);
     Properties(1).compactness = (Properties(1).length)^2/(4*pi*Properties(1).area);
     [Properties(1).comx ,Properties(1).comy] = CenterOfMass(chaincode,Properties(1).area);
-    Properties(1).majoraxis = MajorAxis(coordinates);
-    Properties(1).minoraxis = [0 -1; 1 0]*Properties(1).majoraxis;
+%     Properties(1).majoraxis = MajorAxis(coordinates);
+%     Properties(1).minoraxis = [0 -1; 1 0]*Properties(1).majoraxis;
 %     Properties(1).FilledRegion = FillRegion(chaincode,coordinates,M);
 %     Properties(1).LMOIangle = LeastMomentOfInertia(Properties(1).FilledRegion,Properties(1).comx,Properties(1).comy);
     [Properties(1).EncL,Properties(1).EncH,Properties(1).EncA] = EnclosingRectangle(coordinates);
+    Properties(1).NumOfEndpoints = findEndpoints(coordinates,chaincode);
     
 end
 

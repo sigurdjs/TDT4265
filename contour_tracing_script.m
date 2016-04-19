@@ -1,6 +1,6 @@
 
 % Load image
-image = imread('circle.png');
+image = imread('shape.png');
 
 % Preprocessing of image
 BW = im2bw(image);          % convert image to black and white image

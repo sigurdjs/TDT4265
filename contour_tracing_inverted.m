@@ -4,7 +4,7 @@ image = imread('shape.png');
 % Preprocessing of image
 BW = im2bw(image);          % convert image to black and white image
 BW = padarray(BW,[1 1],1);  % pad image around the edges with white pixels
-
+imshow(BW);
 % Contour Tracing
 [contours,chains] = mooreNeighborhoodTracing( BW );
 
@@ -18,7 +18,7 @@ for row = 1:n
     M(y,x) = 1; 
 end
 M = flipud(M);
-imshow(M);
+%imshow(M);
 
 % % Identify image (object) properties
 % [major_axis_diameter, minor_axis_diameter] = computeDiameterProperties( contours ); 
