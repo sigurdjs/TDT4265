@@ -1,29 +1,24 @@
-
 % Load image
-<<<<<<< HEAD
-image = imread('test.png');
-=======
 image = imread('shape.png');
->>>>>>> 436914ae34ad90ed24f100b1662e2fc62a9edbd3
 
 % Preprocessing of image
 BW = im2bw(image);          % convert image to black and white image
 BW = padarray(BW,[1 1],1);  % pad image around the edges with white pixels
-
+imshow(BW);
 % Contour Tracing
 [contours,chains] = mooreNeighborhoodTracing( BW );
 
 % Recreation of contours in an image
 sizeOfBW = size(BW);
 n = length(contours);
-M = ones(sizeOfBW);
+M = zeros(sizeOfBW);
 for row = 1:n
     x = contours(row,1);
     y = contours(row,2);
-    M(y,x) = 0; 
+    M(y,x) = 1; 
 end
 M = flipud(M);
-imshow(M);
+%imshow(M);
 
 % % Identify image (object) properties
 % [major_axis_diameter, minor_axis_diameter] = computeDiameterProperties( contours ); 
