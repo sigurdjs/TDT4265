@@ -9,7 +9,7 @@ function [Properties] = ObjectProperties( chaincode , coordinates,M)
 %     Properties(1).minoraxis = [0 -1; 1 0]*Properties(1).majoraxis;
 %     Properties(1).FilledRegion = FillRegion(chaincode,coordinates,M);
 %     Properties(1).LMOIangle = LeastMomentOfInertia(Properties(1).FilledRegion,Properties(1).comx,Properties(1).comy);
-    [Properties(1).EncL,Properties(1).EncH,Properties(1).EncA] = EnclosingRectangle(coordinates);
+    [Properties(1).EncL,Properties(1).EncH,Properties(1).EncA,Properties(1).figure] = EnclosingRectangle(coordinates);
     Properties(1).NumOfEndpoints = findEndpoints(coordinates,chaincode);
     
 end
@@ -231,8 +231,8 @@ end
 %     Angle = 0.5*atan((2*mu_11)/(mu_20-mu_02));
 % end
 
-function [ Length, Height, Area ] = EnclosingRectangle(C)
-    Length = 10000; Height = 10000;
+function [ Length, Height, Area , Figure] = EnclosingRectangle(C)
+    Length = 0; Height = 0; MinArea = 1e+10;
     for theta = 0:1:90
         vectors = RotateVectors(C,theta);
         x = vectors(:,1) +(-1*(min(vectors(:,1)))) +1;
@@ -240,12 +240,19 @@ function [ Length, Height, Area ] = EnclosingRectangle(C)
         Matrix = sparse(round(y),round(x),1);
         Matrix = full(Matrix);
         [m,n] = size(Matrix);
-        if m < Height && n < Length 
+        if m*n < MinArea
+            MinMatr = Matrix;
+            MinArea = m*n;
             Height = m;
             Length = n;
         end
     end
     Area = Length*Height;
+    MinMatr(1,:) = 1;
+    MinMatr(end,:) = 1;
+    MinMatr(:,1) = 1;
+    MinMatr(:,end) = 1;
+    Figure = MinMatr;
 end
    
 
