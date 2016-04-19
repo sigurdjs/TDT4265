@@ -1,10 +1,7 @@
 
 % Load image
-<<<<<<< HEAD
 image = imread('test.png');
-=======
-image = imread('shape.png');
->>>>>>> 436914ae34ad90ed24f100b1662e2fc62a9edbd3
+
 
 % Preprocessing of image
 BW = im2bw(image);          % convert image to black and white image
