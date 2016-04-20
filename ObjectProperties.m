@@ -7,8 +7,6 @@ function [Properties] = ObjectProperties( chaincode , coordinates,M)
     [Properties(1).comx ,Properties(1).comy] = CenterOfMass(chaincode,coordinates,Properties(1).area);
     [Properties(1).EncL,Properties(1).EncH,Properties(1).EncA,Properties(1).figure] = EnclosingRectangle(coordinates);
     Properties(1).NumberOfVertices = computeNrOfVertices(chaincode);
-    
-    
 end
 
 function [ ContourLength ] = FindLength( B )
