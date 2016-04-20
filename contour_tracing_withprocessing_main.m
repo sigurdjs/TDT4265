@@ -8,7 +8,6 @@ BW = imcomplement(BW);
 % Preprocessing of image
 % BW = im2bw(image);          % convert image to black and white image
 BW = padarray(BW,[1 1],1);  % pad image around the edges with white pixels
-imshow(BW);
 % Contour Tracing
 [contours,chains] = mooreNeighborhoodTracing( BW );
 
@@ -25,13 +24,13 @@ for row = 1:n
     M(y,x) = 1; 
 end
 M = flipud(M);
-figure(1);
-imshow(image);
 % Identify image (object) properties
 Properties = ObjectProperties(chains,contours,M);
+figure(2);
+imshow(image);
 N = padarray(Properties.figure,[100 100],'both');
 N = flipud(N);
-figure(2);
+figure(3);
 imshow(N);
 
 % Determine shape

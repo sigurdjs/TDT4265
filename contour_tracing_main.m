@@ -1,12 +1,8 @@
 % Load image
-image = imread('mynt.png');
-BW = rgb2gray(image);
-BW = edge(BW,'canny',[0.01 0.6]);
-se = strel('disk',10);
-BW = imclose(BW,se);
-BW = imcomplement(BW);
+image = imread('image.png');
+
 % Preprocessing of image
-% BW = im2bw(image);          % convert image to black and white image
+BW = im2bw(image);          % convert image to black and white image
 BW = padarray(BW,[1 1],1);  % pad image around the edges with white pixels
 imshow(BW);
 % Contour Tracing
